@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>보석동굴 그림책 탐험대</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+</head>
+<body class="bg-[#E0F7F1] min-h-screen p-6 text-sm">
+  <h1 class="text-2xl font-bold text-center text-[#007F6D] mb-4">&lt;보석동굴&gt; 그림책 탐험대</h1>
+
+  <div class="flex flex-wrap justify-center gap-2 mb-4">
+    <button id="toggleMenu" class="bg-sky-900 text-white rounded px-4 py-2">메뉴 숨기기 📘</button>
+    <button data-page="1" class="menu-btn bg-sky-900 text-white rounded px-4 py-2">1. 어떤 보석들이 있을까요?</button>
+    <button data-page="2" class="menu-btn bg-white border px-4 py-2 rounded">2. 나의 강점 보석</button>
+    <button data-page="3" class="menu-btn bg-white border px-4 py-2 rounded">3. 나의 필요 보석</button>
+    <button data-page="4" class="menu-btn bg-white border px-4 py-2 rounded">4. 활동 다짐</button>
+  </div>
+
+  <div id="content" class="max-w-4xl mx-auto">
+    <div id="gem-meaning" class="text-center text-sm bg-white rounded shadow-md p-4 mb-6 hidden"></div>
+    <div id="gem-list" class="grid grid-cols-4 gap-2 text-center mb-6"></div>
+    <div id="extra-content" class="mb-6"></div>
+  </div>
+
+  <div class="flex justify-center gap-2 mt-8">
+    <button onclick="saveImage()" class="bg-sky-900 text-white px-4 py-2 rounded">저장하기 🖼️</button>
+    <button onclick="copyLink()" class="bg-sky-900 text-white px-4 py-2 rounded">링크 복사 🔗</button>
+  </div>
+
+  <script>
+    const gems = [
+      ["감사", "배려", "유연성", "창의성"],
+      ["결의", "봉사", "이상품기", "책임감"],
+      ["겸손", "사랑", "이해", "청결"],
+      ["관용", "사려", "인내", "초연"],
+      ["근면", "상냥함", "인정", "충직"],
+      ["기뻐함", "소신", "자율", "친절"],
+      ["기지", "신뢰", "절도", "탁월함"],
+      ["끈기", "신용", "정돈", "평온함"],
+      ["너그러움", "열정", "정의로움", "한결같음"],
+      ["도움", "예의", "정직", "헌신"],
+      ["명예", "용기", "존중", "협동"],
+      ["목적의식", "용서", "중용", "화합"],
+      ["믿음직함", "우의", "진실함", "확신"]
+    ];
+
+    const gemMeanings = {
+      용기: "두려움을 이기고 행동하는 태도",
+      배려: "다른 사람의 기분과 입장을 생각하는 태도",
+      책임감: "맡은 일을 끝까지 해내는 성실함",
+      정직: "거짓 없이 바르게 말하고 행동하는 태도",
+      감사: "소중함을 알고 고마움을 표현하는 마음",
+      확신: "확고한 믿음을 갖고 행동하는 태도",
+      // 기타 나머지 46개도 필요시 추가
+    };
+
+    let selectedPage = 1;
+    let clickedGems = [];
+
+    const gemList = document.getElementById("gem-list");
+    const gemMeaning = document.getElementById("gem-meaning");
+    const extraContent = document.getElementById("extra-content");
+    const menuButtons = document.querySelectorAll(".menu-btn");
+
+    function renderGems() {
+      gemList.innerHTML = "";
+      gems.flat().forEach(word => {
+        const btn = document.createElement("div");
+        btn.textContent = word;
+        btn.className = `cursor-pointer py-2 rounded shadow ${
+          clickedGems.includes(word) && selectedPage === 1 ? 'bg-pink-300 text-white' : 'bg-white'
+        } hover:bg-blue-100`;
+        btn.onclick = () => {
+          if (selectedPage === 1) clickedGems.push(word);
+          gemMeaning.innerHTML = `<div class="text-2xl mb-1">💎</div><div class="font-bold">${word}</div><div>${gemMeanings[word] || "뜻이 준비 중입니다."}</div>`;
+          gemMeaning.classList.remove("hidden");
+          renderGems();
+        };
+        gemList.appendChild(btn);
+      });
+    }
+
+    function renderExtraContent() {
+      extraContent.innerHTML = "";
+      if (selectedPage === 2) {
+        extraContent.innerHTML = `<h2 class="text-lg font-semibold mb-2">내가 잘하는 보석 2개를 골라 이유를 써보세요.</h2>`;
+      } else if (selectedPage === 3) {
+        extraContent.innerHTML = `<h2 class="text-lg font-semibold mb-2">지금 나에게 필요한 보석 2개를 골라 이유를 써보세요.</h2>`;
+      } else if (selectedPage === 4) {
+        extraContent.innerHTML = `
+          <h2 class="text-lg font-semibold mb-2">오늘의 활동 다짐</h2>
+          <input type="text" placeholder="나의 다짐을 적어보세요" class="w-full px-4 py-2 border rounded" />
+        `;
+      }
+    }
+
+    document.querySelectorAll(".menu-btn").forEach(btn => {
+      btn.onclick = () => {
+        selectedPage = parseInt(btn.dataset.page);
+        menuButtons.forEach(b => b.classList.remove("bg-sky-900", "text-white"));
+        btn.classList.add("bg-sky-900", "text-white");
+        renderGems();
+        renderExtraContent();
+      };
+    });
+
+    document.getElementById("toggleMenu").onclick = () => {
+      const visible = menuButtons[0].style.display !== "none";
+      menuButtons.forEach(btn => btn.style.display = visible ? "none" : "inline-block");
+      document.getElementById("toggleMenu").textContent = visible ? "메뉴 보이기 📘" : "메뉴 숨기기 📘";
+    };
+
+    function saveImage() {
+      html2canvas(document.body).then(canvas => {
+        const link = document.createElement("a");
+        link.download = "my-gem.png";
+        link.href = canvas.toDataURL();
+        link.click();
+      });
+    }
+
+    function copyLink() {
+      navigator.clipboard.writeText(location.href);
+      alert("링크가 복사되었습니다!");
+    }
+
+    renderGems();
+  </script>
+</body>
+</html>
